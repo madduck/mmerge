@@ -6,7 +6,7 @@ import pathlib
 from contextlib import asynccontextmanager
 
 import click
-import markdownmail
+import markdownmail  # type: ignore[import-untyped,unused-ignore]
 from click_async_plugins import PluginLifespan, plugin
 
 from .jinja2 import Jinja2Sink

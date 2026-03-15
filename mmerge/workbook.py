@@ -6,7 +6,7 @@ from typing import Any, AsyncGenerator
 import click
 from click_async_plugins import PluginLifespan, plugin
 from pyexcel import iget_book
-from pyexcel.internal import SheetStream
+from pyexcel.internal import SheetStream  # type: ignore[import-untyped,unused-ignore]
 
 from .util import CliContext, Record, pass_clictx
 
