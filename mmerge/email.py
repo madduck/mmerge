@@ -17,7 +17,11 @@ logger = logging.getLogger(__name__)
 
 class EmailSink(Jinja2Sink):
     def __init__(
-        self, tplpath: pathlib.Path, outdir: pathlib.Path, *, fnametpl: str = ".txt"
+        self,
+        tplpath: pathlib.Path,
+        outdir: pathlib.Path | None,
+        *,
+        fnametpl: str = ".eml",
     ) -> None:
         super().__init__(tplpath, outdir, fnametpl=fnametpl)
 
@@ -37,7 +41,7 @@ class EmailSink(Jinja2Sink):
 async def setup_email_sink(
     clictx: CliContext,
     tplpath: pathlib.Path,
-    outdir: pathlib.Path,
+    outdir: pathlib.Path | None,
     filename_template: str = "{id:03d}",
 ) -> PluginLifespan:
     clictx.snks.append(EmailSink(tplpath, outdir, fnametpl=filename_template))
@@ -57,7 +61,7 @@ async def setup_email_sink(
     "-o",
     type=click.Path(path_type=pathlib.Path),
     metavar="OUTPUT_DIRECTORY",
-    default=pathlib.Path.cwd() / "emailout",
+    default=None,
     help="Directory where to write email files to",
 )
 @click.option(
@@ -71,7 +75,7 @@ async def setup_email_sink(
 async def plugincmd(
     clictx: CliContext,
     template: pathlib.Path,
-    outdir: pathlib.Path,
+    outdir: pathlib.Path | None,
     filename_template: str,
 ) -> PluginLifespan:
     """[out] Create email files for records"""

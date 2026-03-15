@@ -1,6 +1,7 @@
 import datetime
 import logging
 import pathlib
+import tempfile
 from contextlib import asynccontextmanager
 
 import aiofiles
@@ -15,13 +16,26 @@ logger = logging.getLogger(__name__)
 
 class Jinja2Sink:
     def __init__(
-        self, tplpath: pathlib.Path, outdir: pathlib.Path, *, fnametpl: str = ".txt"
+        self,
+        tplpath: pathlib.Path,
+        outdir: pathlib.Path | None,
+        *,
+        fnametpl: str = ".txt",
     ) -> None:
         tplenv = Environment(loader=FileSystemLoader("."), enable_async=True)
         self._template = tplenv.get_template(str(tplpath))
         logger.info(f"Loaded template: {tplpath}")
-        self._outdir = outdir
-        outdir.mkdir(exist_ok=True, parents=True)
+
+        if outdir is None:
+            tmpdir = tempfile.TemporaryDirectory(prefix="mmerge-", delete=False)
+            self._outdir = pathlib.Path(tmpdir.name)
+            print(f"Writing files to output directory\n{self._outdir}")
+
+        else:
+            if not outdir.is_dir():
+                raise click.ClickException(f"Output directory does not exist: {outdir}")
+            self._outdir = outdir
+
         self._fnametpl = fnametpl
         self._count = 0
 
@@ -47,7 +61,7 @@ class Jinja2Sink:
 async def setup_jinja2_sink(
     clictx: CliContext,
     tplpath: pathlib.Path,
-    outdir: pathlib.Path,
+    outdir: pathlib.Path | None,
     filename_template: str = "{id:03d}",
 ) -> PluginLifespan:
     clictx.snks.append(Jinja2Sink(tplpath, outdir, fnametpl=filename_template))
@@ -67,7 +81,7 @@ async def setup_jinja2_sink(
     "-o",
     type=click.Path(path_type=pathlib.Path),
     metavar="OUTPUT_DIRECTORY",
-    default=pathlib.Path.cwd() / "j2out",
+    default=None,
     help="Directory where to write files to",
 )
 @click.option(
@@ -81,7 +95,7 @@ async def setup_jinja2_sink(
 async def plugincmd(
     clictx: CliContext,
     template: pathlib.Path,
-    outdir: pathlib.Path,
+    outdir: pathlib.Path | None,
     filename_template: str,
 ) -> PluginLifespan:
     """[out] Instantiate a Jinja2 template for records"""
