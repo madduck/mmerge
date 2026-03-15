@@ -1,0 +1,12 @@
+/.pytest_cache
+__pycache__
+/.stfolder
+.*.sw?
+*.py[oc]
+_version.py
+/.stignore
+/.envrc
+.coverage
+/.direnv
+/_version.py
+/dist

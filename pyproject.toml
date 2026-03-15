@@ -1,0 +1,100 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.hooks.vcs]
+version-file = "_version.py"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.sdist]
+exclude = [".direnv", ".gitignore", ".github"]
+
+[tool.setuptools_scm]
+write_to = "_version.py"
+
+[project]
+name = "mmerge"
+dynamic = ["version"]
+authors = [{ name = "martin f. krafft", email = "mmerge@pobox.madduck.net" }]
+description = "Tool to merge data sources and do something with the records"
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+dependencies = [
+  "pydantic",
+  "deepmerge",
+  "aiostream",
+  "aiofiles",
+  "pyexcel",
+  "pyexcel-xls",
+  "pyexcel-ods",
+  "markdownmail",
+  "jinja2",
+  "click-extra (> 7)",
+  "click-async-plugins",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "pytest-ruff",
+  "click-extra[pytest]",
+  "ipdb",
+  "mypy",
+  "ruff",
+  "pre-commit",
+  "coverage",
+  "pytest-cov",
+  "types-aiofiles",
+]
+
+[project.scripts]
+mmerge = "mmerge.main:mmerge"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = """
+  -ra
+  --pdbcls=IPython.terminal.debugger:TerminalPdb
+  --cov=mmerge --cov-report term-missing:skip-covered --no-cov-on-fail
+  --ruff --ruff-format --ruff-config 'lint.ignore = ["I001", "F401", "F841"]'
+"""
+asyncio_default_fixture_loop_scope = "function"
+log_level = "WARNING"
+log_format = "%(name)s %(levelname)s %(message)s"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["B", "C", "E", "F", "I", "W", "B9"]
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["ipdb", "pyexcel", "pyexcel.internal", "markdownmail"]
+ignore_missing_imports = true
+
+[tool.coverage.report]
+exclude_also = [
+  'def __repr__',
+  'if TYPE_CHECKING:',
+  'class .*\bProtocol\):',
+  '@overload',
+  '@(abc\.)?abstractmethod',
+  'raise NotImplementedError',
+  'raise AssertionError',
+]
